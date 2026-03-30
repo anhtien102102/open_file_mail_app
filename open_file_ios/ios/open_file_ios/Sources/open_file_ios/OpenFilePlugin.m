@@ -53,17 +53,6 @@ static UIViewController *RootViewController(void) {
         BOOL fileExist=[fileManager fileExistsAtPath:filePath];
         if(fileExist){
             NSURL *fileURL = [NSURL fileURLWithPath:filePath];
-            
-            if (@available(iOS 26.0, *)) {
-                fileURL = [self createTempFileFromURL:fileURL];
-                if (!fileURL) {
-                    NSString * json = [self getJson:@"File opened incorrectly。" type:@-5];
-                    result(json);
-                    return;
-                }
-            }
-            
-            
             _documentController = [UIDocumentInteractionController interactionControllerWithURL:fileURL];
             _documentController.delegate = self;
             BOOL isAppOpen = [call.arguments[@"isIOSAppOpen"] boolValue];
@@ -100,8 +89,33 @@ static UIViewController *RootViewController(void) {
     }
 }
 
+- (BOOL)isContainKorean:(NSString *)text {
+    for (NSUInteger i = 0; i < text.length; i++) {
+        unichar ch = [text characterAtIndex:i];
+        
+        if (ch >= 0xAC00 && ch <= 0xD7AF) {
+            return YES;
+        }
+        else if (ch >= 0x1100 && ch <= 0x11FF) {
+            return YES;
+        }
+        else if (ch >= 0x3130 && ch <= 0x318F) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
 - (void)openFileWithUIActivityViewController:(NSURL *)fileURL vc:(UIViewController *)rootViewController {
-    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[fileURL] applicationActivities:nil];
+    NSURL *newFileUrl = fileURL;
+    NSString *fileName = newFileUrl.lastPathComponent;
+    if (@available(iOS 26.0, *)) {
+        if (fileName && [self isContainKorean:fileName]) {
+            newFileUrl = [self createTempFileFromURL:fileURL];
+        }
+    }
+    
+    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[newFileUrl] applicationActivities:nil];
     
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
         activityViewController.popoverPresentationController.sourceView = rootViewController.view;
