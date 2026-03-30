@@ -107,13 +107,16 @@ static UIViewController *RootViewController(void) {
 }
 
 - (void)openFileWithUIActivityViewController:(NSURL *)fileURL vc:(UIViewController *)rootViewController {
-    NSURL *newFileUrl = fileURL;
-    NSString *fileName = newFileUrl.lastPathComponent;
-    if (@available(iOS 26.0, *)) {
-        if (fileName && [self isContainKorean:fileName]) {
-            newFileUrl = [self createTempFileFromURL:fileURL];
-        }
-    }
+//    NSURL *newFileUrl = fileURL;
+//    NSString *fileName = newFileUrl.lastPathComponent;
+//    if (@available(iOS 26.0, *)) {
+//        if (fileName && [self isContainKorean:fileName]) {
+//            newFileUrl = [self createTempFileFromURL:fileURL];
+//        }
+//    }
+//     hien tai chi goi khi khong mo duoc file.
+//    Vi the chi doi ten khi preview file = 1 app khac hoac ra ngoai
+    NSURL *newFileUrl = [self createTempFileFromURL:fileURL];
     
     UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[newFileUrl] applicationActivities:nil];
     
