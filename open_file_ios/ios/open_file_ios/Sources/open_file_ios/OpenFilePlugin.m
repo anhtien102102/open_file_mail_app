@@ -121,7 +121,12 @@ static UIViewController *RootViewController(void) {
 }
 
 - (UIViewController *)documentInteractionControllerViewControllerForPreview:(UIDocumentInteractionController *)controller {
-    return RootViewController();
+    UIViewController *vc = RootViewController();
+    if ([vc isKindOfClass:[UINavigationController class]]) {
+        UINavigationController *nav = (UINavigationController*)vc;
+        return nav.topViewController;
+    }
+    return vc;
 }
 
 - (BOOL) isBlankString:(NSString *)string {
