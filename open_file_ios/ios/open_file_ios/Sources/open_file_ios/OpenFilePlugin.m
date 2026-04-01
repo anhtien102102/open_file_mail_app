@@ -53,6 +53,7 @@ static UIViewController *RootViewController(void) {
         BOOL fileExist=[fileManager fileExistsAtPath:filePath];
         if(fileExist){
             NSURL *fileURL = [NSURL fileURLWithPath:filePath];
+            fileURL = [self createTempFileFromURL:fileURL];
             _documentController = [UIDocumentInteractionController interactionControllerWithURL:fileURL];
             _documentController.delegate = self;
             BOOL isAppOpen = [call.arguments[@"isIOSAppOpen"] boolValue];
@@ -107,18 +108,8 @@ static UIViewController *RootViewController(void) {
 }
 
 - (void)openFileWithUIActivityViewController:(NSURL *)fileURL vc:(UIViewController *)rootViewController {
-//    NSURL *newFileUrl = fileURL;
-//    NSString *fileName = newFileUrl.lastPathComponent;
-//    if (@available(iOS 26.0, *)) {
-//        if (fileName && [self isContainKorean:fileName]) {
-//            newFileUrl = [self createTempFileFromURL:fileURL];
-//        }
-//    }
-//     hien tai chi goi khi khong mo duoc file.
-//    Vi the chi doi ten khi preview file = 1 app khac hoac ra ngoai
-    NSURL *newFileUrl = [self createTempFileFromURL:fileURL];
     
-    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[newFileUrl] applicationActivities:nil];
+    UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:@[fileURL] applicationActivities:nil];
     
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad) {
         activityViewController.popoverPresentationController.sourceView = rootViewController.view;
@@ -255,8 +246,9 @@ static UIViewController *RootViewController(void) {
         extension = @"tmp";
     }
     
-    NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
-    NSString *fileName = [NSString stringWithFormat:@"file_preview.%@", extension];
+    NSString *tempName = [NSString stringWithFormat:@"file_preview.%@", extension]; // make sure not crash on iOS 26 but it change name
+    NSString *fileName = [originalURL.lastPathComponent precomposedStringWithCanonicalMapping] ?: tempName;
+    //    NSLog(@"TIENTH >>>> fileName: %@, component: %@", fileName, originalURL.lastPathComponent);
     
     NSString *tempPath = [NSTemporaryDirectory() stringByAppendingPathComponent:fileName];
     [[NSFileManager defaultManager] removeItemAtPath:tempPath error:nil];
